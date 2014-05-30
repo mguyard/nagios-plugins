@@ -1,7 +1,5 @@
 #!/usr/bin/perl
 
-# $Id$
-
 use strict;
 use warnings;
 use Nagios::Plugin;
@@ -87,7 +85,7 @@ my $http_type = "http";
 if ( $ssl ) {
 	$http_type = "https";
 	$port = "443" unless $port;
-} 
+}
 
 $url = $http_type."://".$host.":".$port.$path;
 print "DEBUG :: Url = ".$url."\n" if $verbose;

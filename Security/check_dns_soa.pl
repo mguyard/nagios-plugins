@@ -1,7 +1,5 @@
 #!/usr/bin/perl
 
-# $Id: check_dns_soa.pl 25 2014-05-27 08:27:32Z marc@mguyard.com $
-
 use strict;
 use warnings;
 use Nagios::Plugin;

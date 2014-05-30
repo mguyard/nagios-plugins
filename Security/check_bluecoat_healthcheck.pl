@@ -1,7 +1,5 @@
 #!/usr/bin/perl
 
-# $Id: check_bluecoat_healthcheck.pl 17 2012-05-09 13:31:30Z marc@mguyard.com $
-
 use strict;
 use warnings;
 use Nagios::Plugin;
@@ -87,7 +85,7 @@ my $HealthCheck_Error = 0;
 my $HealthCheck_OK = 0;
 foreach my $HealthCheck (@{$XML_HealthCheck->{HealthCheck}}) {
 	my $HealthCheck_lastcheck = strftime("%d-%m-%Y %H:%M:%S" , localtime($HealthCheck->{Last}->{When}) );
-	
+
 	print "****\nName : ".$HealthCheck->{Name}."\nEnable : ".$HealthCheck->{Enable}."\nStatut : ".$HealthCheck->{Status}."`\nMessage : ".$HealthCheck->{Health}."\nType : ".$HealthCheck->{Type}."\nLast check : ".$HealthCheck_lastcheck."\n****\n\n" if $verbose;
 	switch ($HealthCheck->{Enable}) {
 		case "Enabled" {
@@ -117,7 +115,7 @@ $plugin->add_perfdata(
 	label => "Error",
 	value => $HealthCheck_Error,
 	uom => "",
-);	
+);
 $plugin->add_perfdata(
 	label => "Disabled",
 	value => $HealthCheck_Disabled,

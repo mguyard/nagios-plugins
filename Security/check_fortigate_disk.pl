@@ -1,7 +1,5 @@
 #!/usr/bin/perl
 
-# $Id$
-
 use strict;
 use warnings;
 use Nagios::Plugin;
@@ -101,7 +99,7 @@ if ( $disk_size eq 0 ) {
 	######
 	my $disk_percent = int($disk_usage / $disk_size * 100 + 0.5);
 	print "Usage disk : ".$disk_percent."%\n" if $verbose ;
-	# Threshold methods 
+	# Threshold methods
 	my $threshold = $plugin->set_thresholds(
 		warning => $warning_threshold,
 		critical => $critical_threshold,
@@ -123,7 +121,7 @@ if ( $disk_size eq 0 ) {
                 critical => $critical_threshold,
                 min => 0,
                 max => $disk_size,
-        );	
+        );
 
 	switch ($status) {
 		case 0 { $plugin->add_message(OK, $disk_percent."%"); }

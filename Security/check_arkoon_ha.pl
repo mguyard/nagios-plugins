@@ -1,7 +1,5 @@
 #!/usr/bin/perl
 
-# $Id: check_arkoon_ha.pl 22 2013-04-30 13:25:33Z marc@mguyard.com $
-
 use strict;
 use warnings;
 use Nagios::Plugin;

@@ -1,7 +1,5 @@
 #!/usr/bin/perl
 
-# $Id: check_website_by_proxy.pl 24 2013-07-01 17:51:19Z marc@mguyard.com $
-
 use strict;
 use warnings;
 use Nagios::Plugin;
@@ -130,7 +128,7 @@ my $header = HTTP::Headers->new();
 $header->proxy_authorization_basic($proxy_user,$proxy_pass) if $proxy_user;
 $header->authorization_basic($url_user, $url_pass) if $url_user;
 # Desactive la compression de la reponse en GZIP
-$header->header( 'Accept-Encoding' => 'identity'); 
+$header->header( 'Accept-Encoding' => 'identity');
 my $request = HTTP::Request->new('GET', $url, $header);
 
 # Appel de l'URL
