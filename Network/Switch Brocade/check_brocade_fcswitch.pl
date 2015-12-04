@@ -75,14 +75,17 @@ my $np = Nagios::Plugin->new(
 
 # get Options
 
+my %SnmpSessionArgs;
 GetOptions(
    "H|host=s"           => \$host,
    "C|community=s"      => \$community,
    "p|snmp_port=i"      => \$snmp_port,
-   "v|snmp_version=s"   => \$snmp_version,
+   "v|snmp_version=i"   => \$snmp_version,
    "t|timeout=i"        => \$timeout,
    "h|help"             => \$help,
    "V|version"          => \$printversion,
+   'd|domain=s'         => sub { $SnmpSessionArgs{-domain} = $_[1] },
+   '6'                  => sub { $SnmpSessionArgs{-domain} = 'udp6' },
    );
 
 if ($help) {
@@ -104,7 +107,7 @@ if (!defined $host) {
 	usage();
 	}
 
-if ($snmp_version =~ /[^12c?]/) {
+if ($snmp_version =~ /[^12c]/) {
 	printf "\nSNMP version: $snmp_version is not supported. Please use SNMP version 1 or 2\n";
 	usage();
 	}
@@ -120,9 +123,6 @@ alarm($timeout);
 # Start here with Main Program
 # ------------------------------------------------------
 
-my $session;
-my $error;
-
 my $oid_num_sensors = ".1.3.6.1.4.1.1588.2.1.1.1.1.21.0";
 my $oid_sensor_info = "1.3.6.1.4.1.1588.2.1.1.1.1.22.1.5.";
 my $oid_sensor_value = "1.3.6.1.4.1.1588.2.1.1.1.1.22.1.4.";
@@ -132,6 +132,16 @@ my $sensor_info = "";
 my $sensor_value = 0;
 my $sensor_status = 0;
 my $i = 1;
+
+my ( $session, $error ) = Net::SNMP->session(
+	%SnmpSessionArgs,
+	Hostname  => $host,
+	Community => $community,
+	Port      => $snmp_port,
+	Version   => $snmp_version,
+);
+$np->nagios_die("Unable to open SNMP connection. ERROR: $error")
+  unless defined $session;
 
 my %possible_sensor_status = (
 	1 => "unknown",
@@ -146,9 +156,6 @@ my %possible_sensor_status = (
 if($snmp_version =~ /^2c$/) {
 	$snmp_version = 2;
 }
-
-
-&create_snmpsession();
 
 $no_of_sensors = &get_snmpdata($oid_num_sensors);
 
@@ -187,7 +194,8 @@ while ($i<=$no_of_sensors) {
 	$i++;
 	}
 
-&end_snmpsession();
+$session->close;
+alarm(0);
 
 # Create Nagios-Output and End the Plugin
 
@@ -198,26 +206,11 @@ $np->nagios_exit($code,$message);
 # End Main Program
 # ------------------------------------------------------
 
-sub create_snmpsession() {
-	($session,$error) = Net::SNMP->session(Hostname => $host, Community => $community, Port => $snmp_port, Version => $snmp_version);
-	$np->nagios_die("Unable to open SNMP connection. ERROR: $error") if (!defined($session));
-	}
-
-sub end_snmpsession() {
-	$session->close;
-	alarm(0);
-	}
-
 sub get_snmpdata() {
 	my $oid_requested = $_[0];
 	my $oid_option = $_[1];
 	my $oid_value_hash;
 	my $oid_value;
-	my $session;
-	my $error;
-
-        ($session,$error) = Net::SNMP->session(Hostname => $host, Community => $community, Port => $snmp_port, Version => $snmp_version);
-	$np->nagios_die("Unable to open SNMP connection. ERROR: $error") if (!defined($session));	
 
 	# if OID-Option is given ask them, otherwise do oid only
 
@@ -231,9 +224,6 @@ sub get_snmpdata() {
 		$np->nagios_die("Unable to read SNMP-OID. ERROR: ".$session->error()) if (!defined($oid_value_hash));
                 $oid_value = $oid_value_hash->{$oid_requested};
 		}
-
-        $session->close;
-	alarm(0);
 
         return $oid_value;
         }
@@ -257,6 +247,8 @@ sub help () {
 	printf "   -C (--community)  SNMP read community (default=public)\n";
 	printf "   -v (--snmp_version)  1 for SNMP v1 (default)\n";
 	printf "                        2 for SNMP v2c\n";
+	printf "   -d (--domain)     domain for Net::SNMP, e.g. tcp/ipv6\n";
+	printf "   -6                use UDP over IPv6 (shortcut for \"-d udp6\")\n";
 	printf "   -p (--snmp_port)  SNMP Port (default=161)\n";
 	printf "   -t (--timeout)    Seconds before the plugin times out (default=15)\n";
 	printf "   -V (--version)    Plugin version\n";
